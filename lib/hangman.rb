@@ -7,10 +7,12 @@ require './lib/player'
 class Hangman
   MAX_TURNS = 7
 
-  attr_reader :words, :hidden_word, :player, :turn
+  attr_reader :words, :hidden_word, :player, :guess, :turn, :letter_spots, :wrong_letters
 
   def initialize
     create_word_bank
+    @letter_spots = []
+    @wrong_letters = []
     @turn = 0
   end
 
@@ -34,9 +36,11 @@ class Hangman
   end
 
   def play
-    until @turn >= MAX_TURNS
-      obtain_player_input
-      p @turn += 1
+    until @turn >= MAX_TURNS || @hidden_word.match?(@letter_spots.join)
+      display
+      obtain_player_guess
+      update
+      @turn += 1 unless correct_guess?
     end
   end
 
@@ -50,6 +54,7 @@ class Hangman
 
   def new_session
     @hidden_word = @words[rand(@words.length)]
+    @hidden_word.length.times { @letter_spots.push('_') }
   end
 
   def load_session
@@ -60,21 +65,42 @@ class Hangman
     # save progress
   end
 
-  def obtain_player_input
-    guess = @player.input
-    if check_input(guess)
-      obtain_player_input
+  def obtain_player_guess
+    input = @player.input
+    if input_valid?(input)
+      @guess = input
     else
-      guess
+      obtain_player_guess
     end
   end
 
-  def check_input(input)
+  def input_valid?(input)
     if input.length > 1 || !input.match?(/[A-Za-z]/)
       puts 'Input must match 1 single letter!'
-      true
-    elsif input.downcase.match?(/[a-z]/)
       false
+    elsif input.downcase.match?(/[a-z]/)
+      true
+    end
+  end
+
+  def display
+    puts "Turn: #{@turn} of #{MAX_TURNS}"
+    puts "Wrong letters: #{@wrong_letters}"
+    puts @letter_spots.join(' ')
+    puts "\nPlease guess a letter: "
+  end
+
+  def correct_guess?
+    true if @hidden_word.include?(@guess)
+  end
+
+  def update
+    if correct_guess?
+      @hidden_word.split('').each_with_index do |letter, index|
+        @letter_spots[index] = @guess if letter.match?(@guess)
+      end
+    else
+      @wrong_letters.push(@guess) unless @wrong_letters.include?(@guess)
     end
   end
 end
