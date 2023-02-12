@@ -5,15 +5,15 @@ require './lib/player'
 
 # interface for player to interact with hangman game
 class Hangman
-  MAX_TURNS = 7
+  MAX_TRIES = 7
 
-  attr_reader :words, :hidden_word, :player, :guess, :turn, :letter_spots, :wrong_letters
+  attr_reader :words, :hidden_word, :player, :guess, :tries, :letter_spots, :wrong_letters
 
   def initialize
     create_word_bank
     @letter_spots = []
     @wrong_letters = []
-    @turn = 0
+    @tries = 0
   end
 
   def add_player
@@ -36,12 +36,13 @@ class Hangman
   end
 
   def play
-    until @turn >= MAX_TURNS || @hidden_word.match?(@letter_spots.join)
-      display
+    until @tries >= MAX_TRIES || @hidden_word.match?(@letter_spots.join)
+      info
       obtain_player_guess
       update
-      @turn += 1 unless correct_guess?
+      @tries += 1 unless correct_guess?
     end
+    over
   end
 
   private
@@ -66,6 +67,7 @@ class Hangman
   end
 
   def obtain_player_guess
+    print "\nPlease guess a letter: "
     input = @player.input
     if input_valid?(input)
       @guess = input
@@ -83,11 +85,10 @@ class Hangman
     end
   end
 
-  def display
-    puts "Turn: #{@turn} of #{MAX_TURNS}"
+  def info
+    puts "\ntries: #{@tries} of #{MAX_TRIES}"
     puts "Wrong letters: #{@wrong_letters}"
     puts @letter_spots.join(' ')
-    puts "\nPlease guess a letter: "
   end
 
   def correct_guess?
@@ -101,6 +102,15 @@ class Hangman
       end
     else
       @wrong_letters.push(@guess) unless @wrong_letters.include?(@guess)
+    end
+  end
+
+  def over
+    info
+    if @letter_spots.join.match?(@hidden_word)
+      puts "\nYou saved yourself from a cruel fate!"
+    else
+      puts "\nQuit hanging around and try again!"
     end
   end
 end
