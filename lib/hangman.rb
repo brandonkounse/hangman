@@ -42,6 +42,7 @@ class Hangman
       update
       @tries += 1 unless correct_guess?
     end
+    info
     over
   end
 
@@ -106,7 +107,6 @@ class Hangman
   end
 
   def over
-    info
     if @letter_spots.join.match?(@hidden_word)
       puts "\nYou saved yourself from a cruel fate!"
     else
