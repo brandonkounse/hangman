@@ -2,18 +2,22 @@
 
 require 'yaml'
 require './lib/player'
+require './lib/art'
 
 # interface for player to interact with hangman game
 class Hangman
+  include Art
+
   MAX_TRIES = 7
 
-  attr_reader :words, :hidden_word, :player, :guess, :tries, :letter_spots, :wrong_letters
+  attr_reader :words, :hidden_word, :player, :guess, :tries, :letter_spots, :wrong_letters, :art
 
   def initialize
     create_word_bank
     @letter_spots = []
     @wrong_letters = []
     @tries = 0
+    @art = [stage, noose, head, torso, left_arm, right_arm, left_leg, right_leg]
   end
 
   def add_player
@@ -87,8 +91,8 @@ class Hangman
   end
 
   def info
-    puts "\ntries: #{@tries} of #{MAX_TRIES}"
-    puts "Wrong letters: #{@wrong_letters}"
+    puts "\n#{@art[@tries]}"
+    puts "\nWrong letters: #{@wrong_letters}"
     puts @letter_spots.join(' ')
   end
 
