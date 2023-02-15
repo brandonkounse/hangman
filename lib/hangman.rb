@@ -44,7 +44,7 @@ class Hangman
       info
       obtain_player_guess
       update
-      @tries += 1 unless correct_guess?
+      @tries += 1 unless @hidden_word.include?(@guess)
     end
     info
     over
@@ -96,12 +96,8 @@ class Hangman
     puts @letter_spots.join(' ')
   end
 
-  def correct_guess?
-    true if @hidden_word.include?(@guess)
-  end
-
   def update
-    if correct_guess?
+    if @hidden_word.include?(@guess)
       @hidden_word.split('').each_with_index do |letter, index|
         @letter_spots[index] = @guess if letter.match?(@guess)
       end
