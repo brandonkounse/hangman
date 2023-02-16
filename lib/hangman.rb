@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'yaml'
-require './lib/player'
 require './lib/art'
 
 # interface for player to interact with hangman game
@@ -10,7 +9,7 @@ class Hangman
 
   MAX_TRIES = 7
 
-  attr_reader :words, :hidden_word, :player, :guess, :tries, :letter_spots, :wrong_letters, :art
+  attr_reader :words, :hidden_word, :guess, :tries, :letter_spots, :wrong_letters, :art
 
   def initialize
     create_word_bank
@@ -20,15 +19,9 @@ class Hangman
     @art = [stage, noose, head, torso, left_arm, right_arm, left_leg, right_leg]
   end
 
-  def add_player
-    raise 'maximum players reached!' unless @player.nil?
-
-    @player = Player.new
-  end
-
   def setup
     print 'Would you like to start a new game[1] or load[2] a previous game? '
-    case @player.input
+    case gets.chomp
     when '1'
       new_session
     when '2'
@@ -42,7 +35,7 @@ class Hangman
   def play
     until @tries >= MAX_TRIES || @hidden_word.match?(@letter_spots.join)
       info
-      obtain_player_guess
+      obtain_guess
       update
       @tries += 1 unless @hidden_word.include?(@guess)
     end
@@ -71,13 +64,13 @@ class Hangman
     # save progress
   end
 
-  def obtain_player_guess
+  def obtain_guess
     print "\nPlease guess a letter: "
-    input = @player.input
+    input = gets.chomp
     if input_valid?(input)
       @guess = input
     else
-      obtain_player_guess
+      obtain_guess
     end
   end
 
