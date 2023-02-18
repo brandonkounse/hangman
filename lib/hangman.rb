@@ -9,7 +9,7 @@ class Hangman
 
   MAX_TRIES = 7
 
-  attr_reader :words, :hidden_word, :guess, :tries, :letter_spots, :wrong_letters, :art
+  attr_reader :session_name, :words, :hidden_word, :guess, :tries, :letter_spots, :wrong_letters, :art
 
   def initialize
     create_word_bank
@@ -35,7 +35,7 @@ class Hangman
   def play
     until @tries >= MAX_TRIES || @hidden_word.match?(@letter_spots.join)
       info
-      obtain_guess
+      obtain_input
       update
       @tries += 1 unless @hidden_word.include?(@guess)
     end
@@ -48,10 +48,11 @@ class Hangman
   # read in source file and load words 5-12 letters in length
   def create_word_bank
     @words = File.readlines('google-10000-english-no-swears.txt', chomp: true)
-    @words.select! { |words| words.length >= 5 && words.length <= 12 }
+    @words.select! { |word| word.length >= 5 && word.length <= 12 }
   end
 
   def new_session
+    @session_name = [@words[rand(@words.length)], @words[rand(@words.length)]].join
     @hidden_word = @words[rand(@words.length)]
     @hidden_word.length.times { @letter_spots.push('_') }
   end
@@ -60,17 +61,21 @@ class Hangman
     # load player file
   end
 
-  def save_session
-    # save progress
+  def save_session(name)
+    File.new("./#{name}", 'w')
+    puts "\nFile saved as #{session_name}"
   end
 
-  def obtain_guess
-    print "\nPlease guess a letter: "
+  def obtain_input
+    puts 'Please guess a letter: '
     input = gets.chomp
-    if input_valid?(input)
+
+    if input.match?('save')
+      save_session(session_name)
+    elsif input_valid?(input)
       @guess = input
     else
-      obtain_guess
+      obtain_input
     end
   end
 
