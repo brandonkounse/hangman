@@ -89,6 +89,7 @@ class Hangman
   end
 
   def info
+    system 'clear'
     puts "\n#{@art[@tries]}"
     puts "\nWrong letters: #{@wrong_letters.sort}"
     puts @letter_spots.join(' ')
