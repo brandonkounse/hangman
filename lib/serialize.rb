@@ -5,6 +5,7 @@ require 'yaml'
 # YAML methods to save and load game states
 module Serialize
   def save(name)
+    Dir.mkdir('./saves') unless Dir.exist?('./saves')
     File.new("./saves/#{name}.yml", 'w') unless File.exist?(name)
     File.open("./saves/#{name}.yml", 'w') do |file|
       file.write(state)
