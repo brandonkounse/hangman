@@ -3,5 +3,4 @@
 require './lib/hangman'
 
 hangman = Hangman.new
-hangman.setup
 hangman.play
