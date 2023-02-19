@@ -1,38 +1,28 @@
 # frozen_string_literal: true
 
-require 'yaml'
 require './lib/art'
+require './lib/serialize'
 
 # interface for player to interact with hangman game
 class Hangman
   include Art
+  include Serialize
 
   MAX_TRIES = 7
 
-  attr_reader :session_name, :words, :hidden_word, :guess, :tries, :letter_spots, :wrong_letters, :art
+  attr_reader :round_name, :words, :hidden_word, :guess, :tries, :letter_spots, :wrong_letters, :art
 
   def initialize
     create_word_bank
     @letter_spots = []
     @wrong_letters = []
     @tries = 0
+    @guess = ''
     @art = [stage, noose, head, torso, left_arm, right_arm, left_leg, right_leg]
   end
 
-  def setup
-    print 'Would you like to start a new game[1] or load[2] a previous game? '
-    case gets.chomp
-    when '1'
-      new_session
-    when '2'
-      load_session
-    else
-      puts 'Invalid Selection'
-      setup
-    end
-  end
-
   def play
+    setup
     until @tries >= MAX_TRIES || @hidden_word.match?(@letter_spots.join)
       info
       obtain_input
@@ -51,19 +41,28 @@ class Hangman
     @words.select! { |word| word.length >= 5 && word.length <= 12 }
   end
 
-  def new_session
-    @session_name = [@words[rand(@words.length)], @words[rand(@words.length)]].join
+  def setup
+    print 'Would you like to start a new game[1] or load[2] a previous game? '
+    case gets.chomp
+    when '1'
+      new_round
+    when '2'
+      if saved_files.empty?
+        puts 'No files found! Please start a new game.'
+        setup
+      else
+        load_file(choose_save)
+      end
+    else
+      puts 'Invalid Selection'
+      setup
+    end
+  end
+
+  def new_round
+    @round_name = [@words[rand(@words.length)], @words[rand(@words.length)]].join
     @hidden_word = @words[rand(@words.length)]
     @hidden_word.length.times { @letter_spots.push('_') }
-  end
-
-  def load_session
-    # load player file
-  end
-
-  def save_session(name)
-    File.new("./#{name}", 'w')
-    puts "\nFile saved as #{session_name}"
   end
 
   def obtain_input
@@ -71,7 +70,8 @@ class Hangman
     input = gets.chomp
 
     if input.match?('save')
-      save_session(session_name)
+      save(round_name)
+      obtain_input
     elsif input_valid?(input)
       @guess = input
     else
